@@ -1,8 +1,8 @@
 import joi from "joi";
 
 const operationSchema = joi.object({
-    value: joi.number().required(),
-    description: joi.string().required(),
+    value: joi.number().greater(0).required(),
+    description: joi.string().max(30).required(),
     type: joi.string().allow('')
 })
 

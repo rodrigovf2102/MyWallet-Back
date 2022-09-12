@@ -3,9 +3,9 @@ import bcrypt from 'bcrypt';
 import { v4 as uuid } from 'uuid';
 
 
- async function postNewUser(req, res) {
+async function postNewUser(req, res) {
     let { name, email, senha } = req.body;
-    
+
     try {
         const hasName = await db.collection('users').findOne({ name: name });
         const hasEmail = await db.collection('users').findOne({ email: email });
@@ -44,11 +44,22 @@ async function postUserSignIn(req, res) {
 }
 
 async function getUser(req, res) {
-    const user = res.locals.user;
+    const session = res.locals.session;
+    try {
+        const user = await db.collection('users').findOne({ _id: session.userId });
+        if (!user) {
+            res.status(404).send('Error: user not found');
+            return;
+        }
         if (user) {
             res.status(200).send(user.nome);
             return;
         }
+    } catch (error) {
+        res.status(500).send('Error: unable to acess database');
+        console.log(error)
+        return;
+    }
 }
 
-export {postNewUser,postUserSignIn, getUser}
+export { postNewUser, postUserSignIn, getUser }

@@ -1,9 +1,9 @@
 import joi from 'joi';
 
 const signupSchema = joi.object({
-    name: joi.string().empty().required(),
+    name: joi.string().min(3).max(12).empty().required(),
     email: joi.string().email().required(),
-    senha: joi.required()
+    senha: joi.string().alphanum().min(6).max(30).required()
 })
 
 const signinSchema = joi.object({

@@ -1,11 +1,13 @@
 import express from 'express';
-import { getOperations,postOperation } from '../controllers/operacoesControllers.js';
+import { deleteOperation, getOperations,postOperation, updateOperation } from '../controllers/operacoesControllers.js';
 import operationValidate from '../middleware/operationSchemaValidationMiddleWares.js';
-import { tokenVerificationGetOperations } from '../middleware/tokenAuthorizationMiddlewares.js';
+import {tokenVerification } from '../middleware/tokenAuthorizationMiddlewares.js';
 
 const operationRouter = express.Router();
 
-operationRouter.get('/operacao',tokenVerificationGetOperations,getOperations);
-operationRouter.post('/operacao',operationValidate,postOperation);
+operationRouter.get('/operacao',tokenVerification,getOperations);
+operationRouter.post('/operacao',operationValidate,tokenVerification,postOperation);
+operationRouter.put('/operacao',operationValidate,tokenVerification,updateOperation);
+operationRouter.post('/deloperacao',tokenVerification,deleteOperation)
 
 export default operationRouter;

@@ -2,14 +2,24 @@ import joi from 'joi';
 import db from '../db.js'
 import { stripHtml } from "string-strip-html";
 import dayjs from 'dayjs';
+import { ObjectId } from 'mongodb';
 
 dayjs.locale('pt-br');
 
 async function getOperations(req, res) {
-    const operacoes = res.locals.operacoes
-    operacoes.reverse()
-    if (operacoes) {
+    const session = res.locals.session;
+    try {
+        const operacoes = await db.collection('operacoes').find({ userId: session.userId }).toArray();
+        if (!operacoes) {
+            res.status(404).send('Error: operations not found');
+            return;
+        }
+        operacoes.reverse()
         res.status(201).send(operacoes);
+        return;
+    } catch (error) {
+        res.status(500).send('Error: unable to acess database');
+        console.log(error)
         return;
     }
 }
@@ -28,18 +38,8 @@ async function postOperation(req, res) {
     validOperation.value = Number(valor);
     validOperation.description = descricao;
     validOperation.date = dayjs().format('DD/MM');
-    const { authorization } = req.headers;
-    const token = authorization?.replace('Bearer ', '');
-    if (!token) {
-        res.status(401).send('Error: access denied, empty token, sign-in again');
-        return;
-    }
     try {
-        const session = await db.collection('sessions').findOne({ token });
-        if (!session) {
-            res.status(401).send('Error: access denied, token not found, sign-in again');
-            return;
-        }
+        const session = res.locals.session;
         validOperation.userId = session.userId;
         await db.collection('operacoes').insertOne(validOperation);
         res.status(201).send('Operation inserted');
@@ -50,4 +50,44 @@ async function postOperation(req, res) {
     }
 }
 
-export { getOperations, postOperation }
+async function deleteOperation(req,res){ 
+    let {id} = req.body;
+    try {
+        await db.collection('operacoes').deleteOne({_id:ObjectId(id)});
+        res.status(200).send('Operation deleted');
+    } catch (error) {
+        res.status(500).send('Error: unable to acess database');
+        console.log(error)
+        return;
+    }
+}
+
+async function updateOperation(req, res) {
+
+    let { valor, descricao, tipo, id } = req.body;
+    let validOperation = { value: valor, description: descricao, type: tipo };
+    valor = stripHtml(valor, { skipHtmlDecoding: true }).result.trim();
+    descricao = stripHtml(descricao, { skipHtmlDecoding: true }).result.trim();
+    tipo = stripHtml(tipo, { skipHtmlDecoding: true }).result.trim();
+    if (tipo === 'entrada') {
+        validOperation.type = 'green';
+    } else {
+        validOperation.type = 'red';
+    }
+    validOperation.value = Number(valor);
+    validOperation.description = descricao;
+
+    try {
+        const session = res.locals.session;
+        validOperation.userId = session.userId;
+        await db.collection('operacoes').updateOne({_id:ObjectId(id)},
+        {$set:{value:validOperation.value,description:validOperation.description}});
+        res.status(201).send('Operation updated');
+    } catch (error) {
+        res.status(500).send('Error: unable to acess database');
+        console.log(error)
+        return;
+    }
+}
+
+export { getOperations, postOperation, deleteOperation, updateOperation }
