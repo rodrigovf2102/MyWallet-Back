@@ -10,6 +10,6 @@ try {
 } catch (error) {
     console.log(error.message)
 } 
-const db = mongoClient.db('mywallet-backend');
+const db = mongoClient.db(process.env.DATABASE);
 
 export default db;
