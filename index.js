@@ -8,4 +8,4 @@ server.use(express.json());
 
 server.use(router);
 
-server.listen(5000);
+server.listen(process.env.PORT, ()=>{"Server ON: "+process.env.PORT});
