@@ -1,4 +1,4 @@
-import db from '../db.js'
+import db from '../server'
 import bcrypt from 'bcrypt';
 import { v4 as uuid } from 'uuid';
 

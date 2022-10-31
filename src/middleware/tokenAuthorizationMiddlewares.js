@@ -1,4 +1,4 @@
-import db from '../db.js'
+import db from '../server.js'
 
 async function tokenVerification(req, res, next) {
     

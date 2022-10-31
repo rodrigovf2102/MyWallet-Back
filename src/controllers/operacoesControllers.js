@@ -1,5 +1,5 @@
 import joi from 'joi';
-import db from '../db.js'
+import db from '../server.js'
 import { stripHtml } from "string-strip-html";
 import dayjs from 'dayjs';
 import { ObjectId } from 'mongodb';
